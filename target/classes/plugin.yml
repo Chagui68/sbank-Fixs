@@ -1,0 +1,13 @@
+name: sBank
+version: '1.3'
+main: com.spearforge.sBank.SBank
+api-version: 1.13
+depend: [Vault]
+softdepend: [Citizens]
+commands:
+  sbank:
+    description: Main command for the bank plugin.
+    usage: /<command>
+    aliases:
+      - sb
+      - bank

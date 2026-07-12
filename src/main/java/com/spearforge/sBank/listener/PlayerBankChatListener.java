@@ -129,6 +129,12 @@ public class PlayerBankChatListener implements Listener {
         String playerName = e.getPlayer().getName();
         Bank bank = SBank.getBanks().get(playerName);
 
+        if (bank == null) {
+            BankGuiListener.getCustomWithAmount().remove(playerName);
+            TextUtils.sendMessageWithPrefix(e.getPlayer(), SBank.getPlugin().getConfig().getString("messages.no-bank-account"));
+            return;
+        }
+
         if (MiscUtils.isNumeric(message)) {
             double amount = Double.parseDouble(message);
             if (bank.getBalance() >= amount) {
@@ -142,6 +148,7 @@ public class PlayerBankChatListener implements Listener {
                 TextUtils.sendMessageWithPrefix(e.getPlayer(), SBank.getPlugin().getConfig().getString("messages.not-enough-money"));
             }
         } else {
+            BankGuiListener.getCustomWithAmount().remove(playerName);
             TextUtils.sendMessageWithPrefix(e.getPlayer(), SBank.getPlugin().getConfig().getString("messages.invalid-amount"));
         }
     }
@@ -151,15 +158,27 @@ public class PlayerBankChatListener implements Listener {
         String playerName = e.getPlayer().getName();
         Bank bank = SBank.getBanks().get(playerName);
 
+        if (bank == null) {
+            BankGuiListener.getCustomPhysicalWithAmount().remove(playerName);
+            TextUtils.sendMessageWithPrefix(e.getPlayer(), SBank.getPlugin().getConfig().getString("messages.no-bank-account"));
+            return;
+        }
+
         if (MiscUtils.isNumeric(message)) {
             double amount = Double.parseDouble(message);
             if (bank.getBalance() >= amount) {
                 if (e.getPlayer().getInventory().firstEmpty() != -1) {
-                    e.getPlayer().getInventory().addItem(MiscUtils.getPhysicalMoney(e.getPlayer(), amount));
-                    bank.setBalance(bank.getBalance() - amount);
-                    BankGuiListener.getCustomPhysicalWithAmount().remove(playerName);
-                    TextUtils.sendMessageWithPrefix(e.getPlayer(), SBank.getPlugin().getConfig().getString("messages.physical-withdraw-success")
-                            .replaceAll("%money%", MiscUtils.formatBalance(amount)));
+                    try {
+                        e.getPlayer().getInventory().addItem(MiscUtils.getPhysicalMoney(e.getPlayer(), amount));
+                        bank.setBalance(bank.getBalance() - amount);
+                        BankGuiListener.getCustomPhysicalWithAmount().remove(playerName);
+                        TextUtils.sendMessageWithPrefix(e.getPlayer(), SBank.getPlugin().getConfig().getString("messages.physical-withdraw-success")
+                                .replaceAll("%money%", MiscUtils.formatBalance(amount)));
+                    } catch (Exception ex) {
+                        BankGuiListener.getCustomPhysicalWithAmount().remove(playerName);
+                        SBank.getPlugin().getLogger().warning("Failed to create physical money: " + ex.getMessage());
+                        TextUtils.sendMessageWithPrefix(e.getPlayer(), SBank.getPlugin().getConfig().getString("messages.invalid-amount"));
+                    }
                 } else {
                     TextUtils.sendMessageWithPrefix(e.getPlayer(), SBank.getPlugin().getConfig().getString("messages.inventory-full"));
                     BankGuiListener.getCustomPhysicalWithAmount().remove(playerName);
@@ -169,6 +188,7 @@ public class PlayerBankChatListener implements Listener {
                 TextUtils.sendMessageWithPrefix(e.getPlayer(), SBank.getPlugin().getConfig().getString("messages.not-enough-money"));
             }
         } else {
+            BankGuiListener.getCustomPhysicalWithAmount().remove(playerName);
             TextUtils.sendMessageWithPrefix(e.getPlayer(), SBank.getPlugin().getConfig().getString("messages.invalid-amount"));
         }
     }
